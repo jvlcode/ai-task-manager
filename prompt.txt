@@ -1,0 +1,33 @@
+Build a realistic full-stack Task Management application.
+
+**TECH STACK**
+- Frontend: React + Vite + TypeScript + Tailwind CSS
+- Backend: Spring Boot + Java 21 + Maven
+- Database: PostgreSQL
+
+**FEATURES**
+- Dashboard with task statistics
+- Task CRUD (Create, Read, Update, Delete)
+- Task details page
+- Team members page
+
+**ARCHITECTURE**
+- Separate frontend and backend folders
+- Backend: Controller → Service → Repository
+- REST APIs with DTOs and input validation
+- Clean, responsive UI
+
+**SAMPLE DATA**
+- Automatically create 12 sample tasks with different statuses and priorities
+- Create 5 sample team members
+- Avoid duplicate data when restarting the application
+
+**IMPORTANT**
+Do NOT implement Task Assignment yet.
+Keep tasks and team members separate, without any assignment relationship, API, or UI.
+
+**VERIFICATION**
+- Check frontend and backend builds
+- Fix any build errors
+- Provide PostgreSQL setup and application startup instructions
+- Report any checks that could not be completed
