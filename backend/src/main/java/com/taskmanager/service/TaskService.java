@@ -6,7 +6,9 @@ import com.taskmanager.exception.ResourceNotFoundException;
 import com.taskmanager.model.Task;
 import com.taskmanager.model.TaskPriority;
 import com.taskmanager.model.TaskStatus;
+import com.taskmanager.model.TeamMember;
 import com.taskmanager.repository.TaskRepository;
+import com.taskmanager.repository.TeamMemberRepository;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
@@ -22,9 +24,11 @@ import java.util.List;
 public class TaskService {
 
     private final TaskRepository taskRepository;
+    private final TeamMemberRepository teamMemberRepository;
 
-    public TaskService(TaskRepository taskRepository) {
+    public TaskService(TaskRepository taskRepository, TeamMemberRepository teamMemberRepository) {
         this.taskRepository = taskRepository;
+        this.teamMemberRepository = teamMemberRepository;
     }
 
     public List<TaskResponse> findAll(TaskStatus status, TaskPriority priority, String search) {
@@ -84,6 +88,17 @@ public class TaskService {
         return TaskResponse.from(taskRepository.saveAndFlush(task));
     }
 
+    /**
+     * Assigns the task to the given team member, replacing any previous assignee.
+     * A {@code null} teamMemberId unassigns the task.
+     */
+    @Transactional
+    public TaskResponse assign(Long id, Long teamMemberId) {
+        Task task = getTask(id);
+        task.setAssignee(teamMemberId == null ? null : getTeamMember(teamMemberId));
+        return TaskResponse.from(taskRepository.saveAndFlush(task));
+    }
+
     @Transactional
     public void delete(Long id) {
         taskRepository.delete(getTask(id));
@@ -92,6 +107,11 @@ public class TaskService {
     private Task getTask(Long id) {
         return taskRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Task", id));
+    }
+
+    private TeamMember getTeamMember(Long id) {
+        return teamMemberRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Team member", id));
     }
 
     private static String normalize(String value) {

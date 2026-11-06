@@ -3,11 +3,12 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { tasksApi } from '../api'
 import { errorMessage } from '../api/client'
 import { ArrowLeftIcon, CalendarIcon, PencilIcon, TrashIcon } from '../components/icons'
-import { Alert, Card, ConfirmDialog, ErrorState, PriorityBadge, Spinner, StatusBadge } from '../components/ui'
+import { Alert, AssigneeName, Card, ConfirmDialog, ErrorState, PriorityBadge, Spinner, StatusBadge } from '../components/ui'
 import { buttonClass, inputClass } from '../lib/styles'
 import { useAsync } from '../hooks/useAsync'
 import { STATUS_LABELS, formatDate, formatDateTime, isOverdue, relativeDueDate } from '../lib/format'
 import { TASK_STATUSES, type TaskStatus } from '../types'
+import { teamMembersApi } from '../api'
 
 function DetailItem({ label, children }: { label: string; children: ReactNode }) {
   return (
@@ -24,8 +25,17 @@ export default function TaskDetailPage() {
   const navigate = useNavigate()
   const { data: task, error, loading, reload, setData } = useAsync(() => tasksApi.get(taskId), `task-${taskId}`)
 
+  const {
+    data: members,
+    error: membersError,
+    loading: membersLoading,
+    reload: reloadMembers,
+  } = useAsync(() => teamMembersApi.list(), 'team-members-for-assignment')
+
   const [statusSaving, setStatusSaving] = useState(false)
   const [statusError, setStatusError] = useState<string | null>(null)
+  const [assignSaving, setAssignSaving] = useState(false)
+  const [assignError, setAssignError] = useState<string | null>(null)
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState<string | null>(null)
@@ -39,6 +49,19 @@ export default function TaskDetailPage() {
       setStatusError(errorMessage(err))
     } finally {
       setStatusSaving(false)
+    }
+  }
+
+  /** `value` is the select's team member id, or '' for "Unassigned". */
+  const changeAssignee = async (value: string) => {
+    setAssignSaving(true)
+    setAssignError(null)
+    try {
+      setData(await tasksApi.assign(taskId, value ? Number(value) : null))
+    } catch (err) {
+      setAssignError(errorMessage(err))
+    } finally {
+      setAssignSaving(false)
     }
   }
 
@@ -121,6 +144,47 @@ export default function TaskDetailPage() {
               )}
             </Card>
 
+            <Card className="p-5">
+              <label htmlFor="quick-assignee" className="mb-2 block text-sm font-semibold text-slate-900">
+                Assignee
+              </label>
+              {membersLoading && !members ? (
+                <p className="text-sm text-slate-500">Loading team members…</p>
+              ) : membersError ? (
+                <div className="space-y-2">
+                  <Alert message={membersError} />
+                  <button type="button" className={buttonClass('secondary')} onClick={reloadMembers}>
+                    Try again
+                  </button>
+                </div>
+              ) : (
+                <select
+                  id="quick-assignee"
+                  className={inputClass}
+                  value={task.assignee?.id ?? ''}
+                  disabled={assignSaving}
+                  onChange={(e) => changeAssignee(e.target.value)}
+                >
+                  <option value="">Unassigned</option>
+                  {/* Keep the current assignee selectable even if it is missing from the loaded list. */}
+                  {task.assignee && !members?.some((m) => m.id === task.assignee?.id) && (
+                    <option value={task.assignee.id}>{task.assignee.fullName}</option>
+                  )}
+                  {members?.map((member) => (
+                    <option key={member.id} value={member.id}>
+                      {member.fullName}
+                    </option>
+                  ))}
+                </select>
+              )}
+              {assignSaving && <p className="mt-2 text-xs text-slate-500">Saving…</p>}
+              {assignError && (
+                <div className="mt-3">
+                  <Alert message={assignError} />
+                </div>
+              )}
+            </Card>
+
             <Card className="px-5 py-2">
               <dl className="divide-y divide-slate-100">
                 <DetailItem label="Due date">
@@ -133,6 +197,9 @@ export default function TaskDetailPage() {
                       {task.status === 'DONE' ? 'Completed' : relativeDueDate(task.dueDate)}
                     </span>
                   )}
+                </DetailItem>
+                <DetailItem label="Assignee">
+                  <AssigneeName assignee={task.assignee} />
                 </DetailItem>
                 <DetailItem label="Created">{formatDateTime(task.createdAt)}</DetailItem>
                 <DetailItem label="Last updated">{formatDateTime(task.updatedAt)}</DetailItem>

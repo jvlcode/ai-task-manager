@@ -222,7 +222,8 @@ export default function TeamMembersPage() {
           title="Remove team member"
           message={
             <>
-              Remove <strong className="text-slate-900">{deleting.fullName}</strong> from the team? This cannot be undone.
+              Remove <strong className="text-slate-900">{deleting.fullName}</strong> from the team? Tasks assigned to them will
+              become unassigned. This cannot be undone.
             </>
           }
           confirmLabel="Remove"

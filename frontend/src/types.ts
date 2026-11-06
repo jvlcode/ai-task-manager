@@ -4,6 +4,13 @@ export type TaskPriority = 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT'
 export const TASK_STATUSES: TaskStatus[] = ['TODO', 'IN_PROGRESS', 'IN_REVIEW', 'DONE']
 export const TASK_PRIORITIES: TaskPriority[] = ['LOW', 'MEDIUM', 'HIGH', 'URGENT']
 
+/** Compact team member view embedded in task responses. */
+export interface TeamMemberSummary {
+  id: number
+  fullName: string
+  email: string
+}
+
 export interface Task {
   id: number
   title: string
@@ -12,6 +19,8 @@ export interface Task {
   priority: TaskPriority
   /** ISO date (YYYY-MM-DD) */
   dueDate: string | null
+  /** `null` when the task is unassigned. */
+  assignee: TeamMemberSummary | null
   createdAt: string
   updatedAt: string
 }

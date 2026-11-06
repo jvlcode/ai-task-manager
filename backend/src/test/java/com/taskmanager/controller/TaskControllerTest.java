@@ -19,6 +19,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -36,7 +37,7 @@ class TaskControllerTest {
     @Test
     void createReturns201WithLocationHeader() throws Exception {
         TaskResponse created = new TaskResponse(42L, "Write tests", null, TaskStatus.TODO, TaskPriority.HIGH,
-                LocalDate.of(2026, 1, 15), Instant.now(), Instant.now());
+                LocalDate.of(2026, 1, 15), null, Instant.now(), Instant.now());
         when(taskService.create(any())).thenReturn(created);
 
         mockMvc.perform(post("/api/tasks")
@@ -89,5 +90,63 @@ class TaskControllerTest {
     void listRejectsInvalidStatusFilter() throws Exception {
         mockMvc.perform(get("/api/tasks").param("status", "NOPE"))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void assignReturnsAssigneeSummary() throws Exception {
+        TaskResponse.AssigneeSummary assignee = new TaskResponse.AssigneeSummary(7L, "Mei Lin", "mei.lin@example.com");
+        TaskResponse updated = new TaskResponse(1L, "Write tests", null, TaskStatus.TODO, TaskPriority.HIGH,
+                null, assignee, Instant.now(), Instant.now());
+        when(taskService.assign(1L, 7L)).thenReturn(updated);
+
+        mockMvc.perform(patch("/api/tasks/1/assignee")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"teamMemberId":7}
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.assignee.id").value(7))
+                .andExpect(jsonPath("$.assignee.fullName").value("Mei Lin"));
+    }
+
+    @Test
+    void assignNullUnassignsTask() throws Exception {
+        TaskResponse unassigned = new TaskResponse(1L, "Write tests", null, TaskStatus.TODO, TaskPriority.HIGH,
+                null, null, Instant.now(), Instant.now());
+        when(taskService.assign(1L, null)).thenReturn(unassigned);
+
+        mockMvc.perform(patch("/api/tasks/1/assignee")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"teamMemberId":null}
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.assignee").doesNotExist());
+    }
+
+    @Test
+    void assignRejectsNonPositiveTeamMemberId() throws Exception {
+        mockMvc.perform(patch("/api/tasks/1/assignee")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"teamMemberId":0}
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.fieldErrors.teamMemberId").value("Team member id must be a positive number"));
+
+        verifyNoInteractions(taskService);
+    }
+
+    @Test
+    void assignReturns404WhenTeamMemberMissing() throws Exception {
+        when(taskService.assign(1L, 99L)).thenThrow(new ResourceNotFoundException("Team member", 99L));
+
+        mockMvc.perform(patch("/api/tasks/1/assignee")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"teamMemberId":99}
+                                """))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Team member with id 99 was not found"));
     }
 }

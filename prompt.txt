@@ -1,3 +1,5 @@
+#prompt 1:
+
 Build a realistic full-stack Task Management application.
 
 **TECH STACK**
@@ -31,3 +33,53 @@ Keep tasks and team members separate, without any assignment relationship, API, 
 - Fix any build errors
 - Provide PostgreSQL setup and application startup instructions
 - Report any checks that could not be completed
+
+
+#prompt 2:
+Analyze this existing Task Management project.
+
+Identify:
+- Frontend structure and components
+- Backend controllers, services, and repositories
+- Task and Team Member models
+- Existing REST APIs
+- Database relationships
+
+Do not modify any files yet.
+
+Explain how the application currently works.
+
+#prompt 3:
+
+We need to implement Task Assignment.
+
+Requirements:
+- Assign a task to one team member
+- Change the assigned member
+- Unassign a task
+- Show the assignee in task details and task lists
+- Persist assignment in PostgreSQL
+
+Inspect the existing code and propose a plan.
+
+Include required database, backend API,
+DTO, service, and frontend changes.
+
+Follow the project's existing architecture.
+Do not implement anything yet.
+
+#prompt 4:
+Implement the approved Task Assignment plan.
+
+Requirements:
+- Reuse the existing Task and Team Member classes
+- Keep existing task create, read, update, and delete working
+- Add validation for the assignee
+- Update the frontend UI and API calls
+- Handle unassigned tasks correctly
+- Add or update relevant tests
+
+Run the frontend and backend builds.
+Fix any errors these changes introduce.
+
+Summarize the modified files and the verification results.

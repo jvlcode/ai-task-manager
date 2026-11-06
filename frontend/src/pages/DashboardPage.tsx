@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { dashboardApi } from '../api'
 import { AlertIcon, CalendarIcon, CheckCircleIcon, ClockIcon, PlusIcon, TasksIcon, UsersIcon } from '../components/icons'
-import { Card, EmptyState, ErrorState, PageHeader, PriorityBadge, Spinner, StatusBadge } from '../components/ui'
+import { AssigneeName, Card, EmptyState, ErrorState, PageHeader, PriorityBadge, Spinner, StatusBadge } from '../components/ui'
 import { buttonClass } from '../lib/styles'
 import { useAsync } from '../hooks/useAsync'
 import {
@@ -65,6 +65,9 @@ function TaskRow({ task, meta }: { task: Task; meta: ReactNode }) {
         <div className="min-w-0">
           <p className="truncate text-sm font-medium text-slate-900">{task.title}</p>
           <p className="mt-0.5 text-xs text-slate-500">{meta}</p>
+          <div className="mt-1 text-xs text-slate-500">
+            <AssigneeName assignee={task.assignee} />
+          </div>
         </div>
         <div className="flex shrink-0 items-center gap-2">
           <PriorityBadge priority={task.priority} />

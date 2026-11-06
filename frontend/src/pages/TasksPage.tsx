@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { tasksApi } from '../api'
 import { CalendarIcon, PlusIcon, SearchIcon } from '../components/icons'
-import { Card, EmptyState, ErrorState, PageHeader, PriorityBadge, Spinner, StatusBadge } from '../components/ui'
+import { AssigneeName, Card, EmptyState, ErrorState, PageHeader, PriorityBadge, Spinner, StatusBadge } from '../components/ui'
 import { buttonClass, inputClass } from '../lib/styles'
 import { useAsync } from '../hooks/useAsync'
 import { PRIORITY_LABELS, STATUS_LABELS, formatDate, isOverdue } from '../lib/format'
@@ -129,6 +129,7 @@ export default function TasksPage() {
                     <th className="px-5 py-3">Task</th>
                     <th className="px-5 py-3">Status</th>
                     <th className="px-5 py-3">Priority</th>
+                    <th className="px-5 py-3">Assignee</th>
                     <th className="px-5 py-3">Due date</th>
                   </tr>
                 </thead>
@@ -146,6 +147,9 @@ export default function TasksPage() {
                       </td>
                       <td className="px-5 py-3.5">
                         <PriorityBadge priority={task.priority} />
+                      </td>
+                      <td className="max-w-48 px-5 py-3.5">
+                        <AssigneeName assignee={task.assignee} />
                       </td>
                       <td className={`px-5 py-3.5 whitespace-nowrap ${isOverdue(task.dueDate, task.status) ? 'font-medium text-red-600' : 'text-slate-600'}`}>
                         {formatDate(task.dueDate)}
@@ -165,6 +169,9 @@ export default function TasksPage() {
                       <div className="mt-2 flex flex-wrap items-center gap-2">
                         <StatusBadge status={task.status} />
                         <PriorityBadge priority={task.priority} />
+                        <span className="text-xs">
+                          <AssigneeName assignee={task.assignee} />
+                        </span>
                         <span className={`flex items-center gap-1 text-xs ${isOverdue(task.dueDate, task.status) ? 'font-medium text-red-600' : 'text-slate-500'}`}>
                           <CalendarIcon className="size-3.5" />
                           {formatDate(task.dueDate)}

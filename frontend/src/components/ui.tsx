@@ -1,8 +1,26 @@
 import { useEffect, type ReactNode } from 'react'
-import { PRIORITY_LABELS, PRIORITY_STYLES, STATUS_LABELS, STATUS_STYLES } from '../lib/format'
+import { PRIORITY_LABELS, PRIORITY_STYLES, STATUS_LABELS, STATUS_STYLES, avatarColor, initials } from '../lib/format'
 import { buttonClass } from '../lib/styles'
-import type { TaskPriority, TaskStatus } from '../types'
+import type { TaskPriority, TaskStatus, TeamMemberSummary } from '../types'
 import { AlertIcon } from './icons'
+
+/** Shows the assignee's avatar and name, or a muted "Unassigned" label when there is none. */
+export function AssigneeName({ assignee, className = '' }: { assignee: TeamMemberSummary | null; className?: string }) {
+  if (!assignee) {
+    return <span className={`text-slate-400 italic ${className}`}>Unassigned</span>
+  }
+  return (
+    <span className={`inline-flex min-w-0 items-center gap-2 ${className}`}>
+      <span
+        className={`grid size-6 shrink-0 place-items-center rounded-full text-[10px] font-semibold ${avatarColor(assignee.email)}`}
+        aria-hidden="true"
+      >
+        {initials(assignee.fullName)}
+      </span>
+      <span className="truncate">{assignee.fullName}</span>
+    </span>
+  )
+}
 
 export function PageHeader({ title, description, actions }: { title: string; description?: string; actions?: ReactNode }) {
   return (

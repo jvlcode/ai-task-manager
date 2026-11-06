@@ -1,5 +1,6 @@
 package com.taskmanager.controller;
 
+import com.taskmanager.dto.TaskAssigneeRequest;
 import com.taskmanager.dto.TaskRequest;
 import com.taskmanager.dto.TaskResponse;
 import com.taskmanager.dto.TaskStatusUpdateRequest;
@@ -65,6 +66,12 @@ public class TaskController {
     @PatchMapping("/{id}/status")
     public TaskResponse updateStatus(@PathVariable Long id, @Valid @RequestBody TaskStatusUpdateRequest request) {
         return taskService.updateStatus(id, request.status());
+    }
+
+    /** Assigns, reassigns, or unassigns (when {@code teamMemberId} is null) the task. */
+    @PatchMapping("/{id}/assignee")
+    public TaskResponse updateAssignee(@PathVariable Long id, @Valid @RequestBody TaskAssigneeRequest request) {
+        return taskService.assign(id, request.teamMemberId());
     }
 
     @DeleteMapping("/{id}")

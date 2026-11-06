@@ -24,6 +24,9 @@ export const tasksApi = {
     request<Task>(`/tasks/${id}`, { method: 'PUT', body: JSON.stringify(input) }),
   updateStatus: (id: number, status: TaskStatus) =>
     request<Task>(`/tasks/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
+  /** Pass `null` to unassign the task. */
+  assign: (id: number, teamMemberId: number | null) =>
+    request<Task>(`/tasks/${id}/assignee`, { method: 'PATCH', body: JSON.stringify({ teamMemberId }) }),
   remove: (id: number) => request<void>(`/tasks/${id}`, { method: 'DELETE' }),
 }
 
